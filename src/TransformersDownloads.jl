@@ -14,12 +14,13 @@ using JSON
 using SafeTensors
 using Mmap
 
-export hf_file, hf_config, hf_weights,
-    load_config, load_weights
+export hf_file, hf_config, hf_weights, hf_tokenizer, hf_vocab, hf_merges,
+    load_config, load_weights, load_tokenizer, load_vocab, load_merges
 
 include("utils.jl")
 include("hub.jl")
 include("config.jl")
 include("weights.jl")
+include("tokenizer.jl")
 
 end

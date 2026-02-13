@@ -45,6 +45,29 @@ config = load_config("google-bert/bert-base-uncased")
 # Returns a Dict{String, Any}
 ```
 
+### Loading Vocabulary
+
+Load the vocabulary of a model. It automatically detects if it's a `.txt` file (returns a `Vector`) or a `.json` file (returns a `Dict`).
+
+```julia
+# For BERT models (vocab.txt)
+vocab = load_vocab("google-bert/bert-base-uncased")
+# Returns Vector{String}
+
+# For GPT-2 models (vocab.json)
+vocab = load_vocab("gpt2")
+# Returns Dict{String, Any}
+```
+
+### Loading the Full Tokenizer
+
+If you need the full `tokenizer.json` (for modern "Fast Tokenizers"), use `load_tokenizer`:
+
+```julia
+tkr = load_tokenizer("google-bert/bert-base-uncased")
+# Returns Dict{String, Any}
+```
+
 ### Loading Weights
 
 Load the weights (state dictionary) of a model. The library will automatically detect the format (SafeTensors is preferred).

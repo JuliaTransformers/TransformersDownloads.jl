@@ -26,4 +26,16 @@ using Pickle
         @test any(occursin("embeddings", k) for k in keys(weights))
     end
 
+    @testset "Vocab & Tokenizer" begin
+        # Test vocab.txt (BERT)
+        vocab = load_vocab("google-bert/bert-base-uncased")
+        @test vocab isa Vector{String}
+        @test "[CLS]" in vocab
+
+        # Test tokenizer.json
+        tkr = load_tokenizer("google-bert/bert-base-uncased")
+        @test tkr isa AbstractDict
+        @test haskey(tkr, "model")
+    end
+
 end

@@ -68,14 +68,28 @@ using Pickle # Enables Pickle support via extension
 weights = load_weights("some-legacy-model")
 ```
 
-### Using Local Directories
+### Using Local Paths
 
-If you have a model downloaded locally, just pass the directory path:
+The package is "smart" about local paths. You can pass either a **directory** or a **direct path to a file**:
+
+#### 1. Directory Path
+If you pass a directory, the library looks for the default filenames (`config.json`, `model.safetensors`, etc.).
 
 ```julia
 # If "./my_model/" contains config.json and model.safetensors
 config = load_config("./my_model/")
 weights = load_weights("./my_model/")
+```
+
+#### 2. Direct File Path
+If you pass a specific file, the library loads it directly, even if it has a non-standard name. This is useful for custom configurations or specific weight shards.
+
+```julia
+# Loading a specific config file
+config = load_config("/path/to/custom_config.json")
+
+# Loading a specific weight shard
+weights = load_weights("/path/to/pytorch_model.bin")
 ```
 
 ## API Reference

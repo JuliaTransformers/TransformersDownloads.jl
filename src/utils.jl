@@ -26,9 +26,11 @@ _ensure(f::Function, A, args...; kwargs...) = isnothing(A) ? f(args...; kwargs..
     ensure_possible_files(possible_files, model_name; revision=nothing, auth_token=HuggingFaceApi.get_token(), kw...)
 
 Ensure a list of available files in the repo/directory. If `model_name` is a local directory,
-it returns its contents. Otherwise, it searches the Hugging Face Hub.
+it returns its contents. If it is a local file, it returns a list containing that file's name.
+Otherwise, it searches the Hugging Face Hub.
 """
 function ensure_possible_files(possible_files, model_name; revision=nothing, auth_token=HuggingFaceApi.get_token(), kw...)
+    isfile(model_name) && return [basename(model_name)]
     isdir(model_name) && return readdir(model_name)
     return _ensure(list_model_files, possible_files, model_name; revision, token=auth_token)
 end

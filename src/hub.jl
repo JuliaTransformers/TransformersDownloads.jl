@@ -23,9 +23,11 @@ end
     hf_file(repo_id, filename; revision="main", kws...)
 
 Download a specific file from a Hugging Face repository or return the local path
-if `repo_id` is an existing directory.
+if `repo_id` is an existing directory. If `repo_id` is a direct file path, it returns
+`repo_id` directly.
 """
 function hf_file(repo_id, filename; revision="main", kws...)
+    isfile(repo_id) && return repo_id
     isdir(repo_id) && return joinpath(repo_id, filename)
     return _hf_download(hf_file_url(repo_id, filename; revision); kws...)
 end

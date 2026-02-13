@@ -9,29 +9,30 @@ const SAFETENSOR_WEIGHTS_INDEX_NAME = "model.safetensors.index.json"
 function load_pickle_weights end
 
 """
-    hgf_model_weights(model_name; kws...)
+    hf_weights(repo_id; kws...)
 
-Download the weights file (SafeTensors by default) for a given model.
+Download the weights file (SafeTensors by default) for a given repository ID.
+Returns the local path.
 """
-hgf_model_weights(model_name; kws...) = hgf_file(model_name, SAFETENSOR_WEIGHTS_NAME; kws...)
+hf_weights(repo_id; kws...) = hf_file(repo_id, SAFETENSOR_WEIGHTS_NAME; kws...)
 
 """
-    load_state_dict(model_name; possible_files=nothing, kws...)
+    load_weights(repo_id; possible_files=nothing, kws...)
 
-Load the weights (state dictionary) for a given model.
+Load the weights (state dictionary) for a given repository ID.
 
 It automatically detects the available format, prioritizing SafeTensors.
 If only PyTorch Pickle format (`.bin`) is available, it requires `Pickle.jl`
 to be loaded to enable the extension.
 """
-function load_state_dict(model_name; possible_files=nothing, kws...)
-    possible_files = ensure_possible_files(possible_files, model_name; kws...)
+function load_weights(repo_id; possible_files=nothing, kws...)
+    possible_files = ensure_possible_files(possible_files, repo_id; kws...)
 
     # 1. Check for SafeTensors (Preferred)
     if SAFETENSOR_WEIGHTS_INDEX_NAME in possible_files
-        return load_safetensor_sharded(model_name; kws...)
+        return load_safetensor_sharded(repo_id; kws...)
     elseif SAFETENSOR_WEIGHTS_NAME in possible_files
-        return load_safetensor_single(model_name; kws...)
+        return load_safetensor_single(repo_id; kws...)
     end
 
     # 2. Check for PyTorch Pickle (Legacy)
@@ -39,19 +40,19 @@ function load_state_dict(model_name; possible_files=nothing, kws...)
         if isempty(methods(load_pickle_weights))
             error("Weights are in PyTorch Pickle format, but `Pickle.jl` is not loaded. Please `using Pickle` to enable support.")
         end
-        return load_pickle_weights(model_name; possible_files, kws...)
+        return load_pickle_weights(repo_id; possible_files, kws...)
     end
 
-    error("No supported weight format found for $model_name")
+    error("No supported weight format found for $repo_id")
 end
 
-function load_safetensor_single(model_name; kws...)
-    file = hgf_file(model_name, SAFETENSOR_WEIGHTS_NAME; kws...)
+function load_safetensor_single(repo_id; kws...)
+    file = hf_file(repo_id, SAFETENSOR_WEIGHTS_NAME; kws...)
     return load_safetensor_file(file)
 end
 
-function load_safetensor_sharded(model_name; kws...)
-    index_file = hgf_file(model_name, SAFETENSOR_WEIGHTS_INDEX_NAME; kws...)
+function load_safetensor_sharded(repo_id; kws...)
+    index_file = hf_file(repo_id, SAFETENSOR_WEIGHTS_INDEX_NAME; kws...)
     index_data = json_load(index_file)
     weight_map = index_data["weight_map"]
 
@@ -63,7 +64,7 @@ function load_safetensor_sharded(model_name; kws...)
 
     state_dict = Dict{String,Any}()
     for (filename, keys) in files_to_keys
-        file_path = hgf_file(model_name, filename; kws...)
+        file_path = hf_file(repo_id, filename; kws...)
         tensors = SafeTensors.deserialize(file_path)
         for k in keys
             state_dict[k] = tensors[k]

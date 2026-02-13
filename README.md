@@ -33,7 +33,7 @@ You can download any file from a Hugging Face repository:
 using TransformersDownloads
 
 # Download a specific file
-path = hgf_download("google-bert/bert-base-uncased", "tokenizer.json")
+path = hf_file("google-bert/bert-base-uncased", "tokenizer.json")
 ```
 
 ### Loading Configuration
@@ -45,13 +45,13 @@ config = load_config("google-bert/bert-base-uncased")
 # Returns a Dict{String, Any}
 ```
 
-### Loading Weights (State Dict)
+### Loading Weights
 
 Load the weights (state dictionary) of a model. The library will automatically detect the format (SafeTensors is preferred).
 
 ```julia
 # This will look for model.safetensors or pytorch_model.bin
-weights = load_state_dict("google-bert/bert-base-uncased")
+weights = load_weights("google-bert/bert-base-uncased")
 ```
 
 #### SafeTensors (Recommended)
@@ -65,7 +65,7 @@ using TransformersDownloads
 using Pickle # Enables Pickle support via extension
 
 # Now you can load .bin weights
-weights = load_state_dict("some-legacy-model")
+weights = load_weights("some-legacy-model")
 ```
 
 ### Using Local Directories
@@ -75,14 +75,16 @@ If you have a model downloaded locally, just pass the directory path:
 ```julia
 # If "./my_model/" contains config.json and model.safetensors
 config = load_config("./my_model/")
-weights = load_state_dict("./my_model/")
+weights = load_weights("./my_model/")
 ```
 
 ## API Reference
 
-- `hgf_file(model_name, file_name; revision="main", auth_token=...)`: Download a file.
-- `load_config(model_name; ...)`: Download and parse `config.json`.
-- `load_state_dict(model_name; ...)`: Download and load weights into a dictionary-like object.
+- `hf_file(repo_id, filename; revision="main", auth_token=...)`: Download a file.
+- `hf_config(repo_id; ...)`: Download and get the path to `config.json`.
+- `hf_weights(repo_id; ...)`: Download and get the path to weights.
+- `load_config(repo_id; ...)`: Download and parse `config.json`.
+- `load_weights(repo_id; ...)`: Download and load weights into a dictionary-like object.
 
 ## License
 

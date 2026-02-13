@@ -14,9 +14,8 @@ using JSON
 using SafeTensors
 using Mmap
 
-export hgf_download, hgf_file,
-    hgf_model_config, hgf_model_weights,
-    load_config, load_state_dict
+export hf_file, hf_config, hf_weights,
+    load_config, load_weights
 
 include("utils.jl")
 include("hub.jl")

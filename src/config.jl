@@ -1,15 +1,15 @@
 const CONFIG_NAME = "config.json"
 
 """
-    hgf_model_config(model_name; kws...)
+    hf_config(repo_id; kws...)
 
-Download the `config.json` for a given model.
+Download the `config.json` for a given repository ID. Returns the local path.
 """
-hgf_model_config(model_name; kws...) = hgf_file(model_name, CONFIG_NAME; kws...)
+hf_config(repo_id; kws...) = hf_file(repo_id, CONFIG_NAME; kws...)
 
 """
-    load_config(model_name; kws...)
+    load_config(repo_id; kws...)
 
-Download and parse the `config.json` for a given model.
+Download and parse the `config.json` for a given repository ID. Returns a dictionary.
 """
-load_config(model_name; kws...) = json_load(hgf_model_config(model_name; kws...))
+load_config(repo_id; kws...) = json_load(hf_config(repo_id; kws...))

@@ -1,14 +1,14 @@
 using HuggingFaceApi
 
 """
-    hgf_file_url(model_name, file_name; revision="main")
+    hf_file_url(repo_id, filename; revision="main")
 
-Construct a `HuggingFaceURL` for a given model and file.
+Construct a `HuggingFaceURL` for a given repository ID and file name.
 """
-hgf_file_url(model_name, file_name; revision="main") =
-    HuggingFaceURL(model_name, file_name; repo_type=nothing, revision=something(revision, "main"))
+hf_file_url(repo_id, filename; revision="main") =
+    HuggingFaceURL(repo_id, filename; repo_type=nothing, revision=something(revision, "main"))
 
-function _hgf_download(
+function _hf_download(
     hgfurl::HuggingFaceURL; local_files_only::Bool=false, cache::Bool=true,
     auth_token=HuggingFaceApi.get_token(), kw...
 )
@@ -20,19 +20,12 @@ function _hgf_download(
 end
 
 """
-    hgf_file(model_name, file_name; revision="main", kws...)
+    hf_file(repo_id, filename; revision="main", kws...)
 
 Download a specific file from a Hugging Face repository or return the local path
-if `model_name` is an existing directory.
+if `repo_id` is an existing directory.
 """
-function hgf_file(model_name, file_name; revision="main", kws...)
-    isdir(model_name) && return joinpath(model_name, file_name)
-    return _hgf_download(hgf_file_url(model_name, file_name; revision); kws...)
+function hf_file(repo_id, filename; revision="main", kws...)
+    isdir(repo_id) && return joinpath(repo_id, filename)
+    return _hf_download(hf_file_url(repo_id, filename; revision); kws...)
 end
-
-"""
-    hgf_download(args...; kws...)
-
-Alias for [`hgf_file`](@ref).
-"""
-hgf_download(args...; kws...) = hgf_file(args...; kws...)

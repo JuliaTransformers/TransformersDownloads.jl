@@ -19,7 +19,8 @@ export hgf_download, hgf_file,
     load_config, load_state_dict
 
 include("utils.jl")
-include("download.jl")
-include("weight.jl")
+include("hub.jl")
+include("config.jl")
+include("weights.jl")
 
 end

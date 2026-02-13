@@ -1,7 +1,19 @@
 
+const PYTORCH_WEIGHTS_NAME = "pytorch_model.bin"
+const PYTORCH_WEIGHTS_INDEX_NAME = "pytorch_model.bin.index.json"
+const SAFETENSOR_WEIGHTS_NAME = "model.safetensors"
+const SAFETENSOR_WEIGHTS_INDEX_NAME = "model.safetensors.index.json"
+
 # Extension point for Pickle weights.
 # This is populated by TransformersDownloadsPickleExt when Pickle.jl is loaded.
 function load_pickle_weights end
+
+"""
+    hgf_model_weights(model_name; kws...)
+
+Download the weights file (SafeTensors by default) for a given model.
+"""
+hgf_model_weights(model_name; kws...) = hgf_file(model_name, SAFETENSOR_WEIGHTS_NAME; kws...)
 
 """
     load_state_dict(model_name; possible_files=nothing, kws...)

@@ -521,3 +521,47 @@ Key deltas from today: one new `sources.jl`, one new `errors.jl`, tests split of
 ---
 
 *Report generated from static analysis and live runtime experiments (Julia 1.13.1) against the current tree at commit `7b00b73`.*
+
+---
+
+## Addendum — Implementation Status (2026-10-09)
+
+The Phase 1 and Phase 2 items below have been implemented, tested (`Pkg.test()`:
+73 passing tests, offline by default) and committed.
+
+| Review item | Status | Where |
+|---|---|---|
+| §2.1 `Source` traits, local-path bugs | Done | `src/sources.jl`, `src/hub.jl` |
+| §2.2 zero-copy weights, `ShardedStateDict` | Done | `src/weights.jl` |
+| §2.3 Pickle detection without reflection | Done | `src/weights.jl:40`, `ext/` |
+| §2.4 compat/deps/license/docs artifacts | Done | `Project.toml`, `LICENSE`, `docs/` |
+| §2.5 `vocab_format`/`load_vocab_file` hooks | Done | `src/tokenizer.jl` |
+| §2.6 centralized imports, no `_hf_download` indirection | Done | `src/TransformersDownloads.jl`, `src/hub.jl` |
+| §2.7 error taxonomy | Done | `src/errors.jl` |
+| §2.8 kwarg guard | Done | `src/utils.jl` |
+| §2.10 `_`-prefixed internals | Done | `src/weights.jl`, `src/tokenizer.jl` |
+| §3.1–3.7 allocation fixes, dead code removal | Done | `src/` |
+| §3.8 Aqua + JET in test suite | Done | `test/test_quality.jl` |
+| §4 module structure | Done (benchmarks at top-level `benchmarks/`) | tree |
+| §5.8 offline-first tests, network gated | Done | `test/` |
+| §5.9 Aqua + JET quality gate | Done | `test/test_quality.jl` |
+| §5.10 Documenter `checkdocs=:exports` + guide | Done | `docs/` |
+| §5.11 CI matrix `1.10`/`1`/`pre`, network workflow | Done | `.github/workflows/` |
+| §5.12 benchmarks | Partial: dependency-free `benchmarks/run.jl` (BenchmarkTools suite deferred until it can be installed) | `benchmarks/` |
+
+Measured effect of the zero-copy change (2 MiB single-file checkpoint,
+`benchmarks/run.jl`, Julia 1.13.1):
+
+```
+load_weights (single)            0.11 ms        24.3 KiB allocated
+load_weights (sharded)           0.10 ms        18.1 KiB allocated
+load_weights (direct file)       0.21 ms        24.2 KiB allocated
+load_config                      0.01 ms         2.1 KiB allocated
+```
+
+Previously the single-file path allocated at least the full checkpoint size
+(`Dict{String,Any}` copy).
+
+Still open (Phase 3/4): registry registration, downstream BERT.jl/DistilBERT.jl
+smoke test, `subfolder`/`repo_type` plumbing, SentencePiece vocab hook, and a
+BenchmarkTools-based regression suite.

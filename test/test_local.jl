@@ -165,4 +165,11 @@ end
         @test haskey(tokenizer, "model")
         @test hf_tokenizer(fx.single) == joinpath(fx.single, "tokenizer.json")
     end
+
+    @testset "pickle fallback" begin
+        # The varargs fallback is hit when the Pickle extension has no matching
+        # method (here: called with no arguments).
+        @test_throws TD.PickleSupportNotLoadedError TD.load_pickle_weights()
+        @test TD.PickleSupportNotLoadedError <: TD.TransformersDownloadsError
+    end
 end

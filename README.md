@@ -25,6 +25,8 @@ ecosystem (BERT.jl, DistilBERT.jl, ...).
 
 ## Installation
 
+Requires Julia 1.10 or later (package extensions).
+
 ```julia
 using Pkg
 Pkg.add("TransformersDownloads")

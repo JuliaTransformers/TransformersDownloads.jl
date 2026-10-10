@@ -3,10 +3,23 @@ using Pickle
 using SafeTensors
 using TransformersDownloads
 
+if !isdefined(@__MODULE__, :TD)
+    const TD = TransformersDownloads
+end
+
 @testset "Hugging Face Hub (network)" begin
-    @testset "weights (safetensors)" begin
-        weights = load_weights("mkshing/tiny-random-bert")
-        @test weights isa AbstractDict
+    @testset "weights (single safetensors)" begin
+        weights = load_weights("hf-internal-testing/tiny-random-bert")
+        @test weights isa SafeTensors.SafeTensor
+        @test weights isa AbstractDict{String,<:AbstractArray}
+        @test !isempty(weights)
+        @test all(v -> v isa AbstractArray, values(weights))
+    end
+
+    @testset "weights (sharded safetensors)" begin
+        weights = load_weights("hf-internal-testing/tiny-random-bert-sharded")
+        @test weights isa TD.ShardedStateDict
+        @test weights isa AbstractDict{String,<:AbstractArray}
         @test !isempty(weights)
         @test all(v -> v isa AbstractArray, values(weights))
     end

@@ -8,6 +8,8 @@ asset-loading substrate of the Julia Transformers ecosystem
 
 ## Installation
 
+Requires Julia 1.10 or later (package extensions).
+
 ```julia
 using Pkg
 Pkg.add("TransformersDownloads")

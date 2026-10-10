@@ -1,4 +1,5 @@
 Manifest.toml
+/logs/
 *.jl.cov
 *.jl.*.cov
 *.jl.mem

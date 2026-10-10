@@ -1,14 +1,22 @@
-using Documenter, Example
+using Documenter
+using TransformersDownloads
 
-makedocs(modules = [Example],
-         sitename = "Example.jl",
-         format = Documenter.HTML()
-         )
+makedocs(
+    modules = [TransformersDownloads],
+    sitename = "TransformersDownloads.jl",
+    authors = "AbrJA and contributors",
+    format = Documenter.HTML(;
+        prettyurls = get(ENV, "CI", "false") == "true",
+    ),
+    checkdocs = :exports,
+    pages = [
+        "Home" => "index.md",
+        "Ecosystem Guide" => "guide.md",
+    ],
+)
 
 deploydocs(
-    repo = "github.com/JuliaLang/Example.jl.git",
+    repo = "github.com/JuliaTransformers/TransformersDownloads.jl.git",
     target = "build",
-    deps   = nothing,
-    make   = nothing,
     push_preview = true,
 )

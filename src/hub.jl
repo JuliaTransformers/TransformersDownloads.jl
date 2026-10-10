@@ -1,33 +1,48 @@
-using HuggingFaceApi
-
 """
     hf_file_url(repo_id, filename; revision="main")
 
 Construct a `HuggingFaceURL` for a given repository ID and file name.
 """
-hf_file_url(repo_id, filename; revision="main") =
+@inline hf_file_url(repo_id, filename; revision="main") =
     HuggingFaceURL(repo_id, filename; repo_type=nothing, revision=something(revision, "main"))
 
-function _hf_download(
-    hgfurl::HuggingFaceURL; local_files_only::Bool=false, cache::Bool=true,
-    auth_token=HuggingFaceApi.get_token(), kw...
-)
-    return hf_hub_download(
-        hgfurl.repo_id, hgfurl.filename;
-        repo_type=hgfurl.repo_type, revision=hgfurl.revision,
-        auth_token, local_files_only, cache
-    )
+function _hf_download(repo_id, filename; revision="main", local_files_only::Bool=false,
+                      cache::Bool=true, auth_token=get_token())
+    return hf_hub_download(repo_id, filename;
+        repo_type=nothing, revision=something(revision, "main"),
+        auth_token, local_files_only, cache)
 end
 
 """
-    hf_file(repo_id, filename; revision="main", kws...)
+    hf_file(repo_id, filename; revision="main", kws...) -> String
 
-Download a specific file from a Hugging Face repository or return the local path
-if `repo_id` is an existing directory. If `repo_id` is a direct file path, it returns
-`repo_id` directly.
+Return the local path of `filename` inside `repo_id`.
+
+`repo_id` may be
+
+  * a Hugging Face repository id such as `"google-bert/bert-base-uncased"`, in
+    which case the file is downloaded (and cached) on demand;
+  * a path to a local directory containing `filename`; or
+  * a path to a local file, in which case that file is returned directly,
+    regardless of `filename` (useful for files with non-standard names).
+
+A string that looks like a path but does not exist throws a
+[`PathNotFoundError`](@ref) instead of being sent to the Hub as a repository id.
+
+Supported keyword arguments are `revision`, `auth_token`, `cache` and
+`local_files_only` (the latter two are only meaningful for remote files).
 """
-function hf_file(repo_id, filename; revision="main", kws...)
-    isfile(repo_id) && return repo_id
-    isdir(repo_id) && return joinpath(repo_id, filename)
-    return _hf_download(hf_file_url(repo_id, filename; revision); kws...)
+hf_file(repo_id::AbstractString, filename; kws...) =
+    hf_file(classify_source(repo_id), filename; kws...)
+
+function hf_file(source::RepoSource, filename; revision="main", kws...)
+    return _hf_download(source.repo_id, filename; revision, kws...)
+end
+
+function hf_file(source::PathSource, filename; kws...)
+    path = source.path
+    isfile(path) && return path
+    full = joinpath(path, filename)
+    isfile(full) || throw(LocalFileNotFoundError(path, filename))
+    return full
 end

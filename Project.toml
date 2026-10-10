@@ -4,10 +4,8 @@ authors = ["AbrJA <abraham.jaimes.mx@gmail.com>"]
 version = "0.1.0"
 
 [deps]
-DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 HuggingFaceApi = "3cc741c3-0c9d-4fbe-84fa-cdec264173de"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
-Mmap = "a63ad114-7e13-5084-954f-fe012c677804"
 SafeTensors = "eeda0dda-7046-4914-a807-2495fc7abb89"
 
 [weakdeps]
@@ -17,16 +15,20 @@ Pickle = "fbb45041-c46e-462f-888f-7c521cafbc2c"
 TransformersDownloadsPickleExt = "Pickle"
 
 [compat]
-julia = "1"
+Aqua = "0.8"
 HuggingFaceApi = "0.1"
+JET = "0.12"
 JSON = "1"
-Mmap = "1"
 Pickle = "0.3"
 SafeTensors = "1"
+Test = "1"
+julia = "1.10"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 Pickle = "fbb45041-c46e-462f-888f-7c521cafbc2c"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "Pickle"]
+test = ["Test", "Pickle", "Aqua", "JET"]

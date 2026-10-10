@@ -1,7 +1,21 @@
 # Ecosystem Guide
 
-This guide is for authors of downstream model packages (BERT.jl,
-DistilBERT.jl, ...) that build on `TransformersDownloads.jl`.
+This guide is for authors of downstream model packages (DistilBERT.jl and
+friends) that build on `TransformersDownloads.jl`.
+
+## Package scope
+
+`TransformersDownloads.jl` owns the boundary between *bytes on disk* and *Julia
+data structures*: sources, caching, and parsing of `config.json`, SafeTensors
+and Pickle checkpoints, `tokenizer.json`, vocabularies and merges.
+
+- Tokenization **algorithms** (WordPiece/BPE/Unigram, encode/decode) belong in
+  the planned `TransformersTokenizers.jl` package, not here.
+- Model architectures, weight-name mapping and the forward pass belong in the
+  per-model packages.
+
+This package returns data, never behavior: `load_tokenizer` gives you the parsed
+`tokenizer.json` dictionary, while encoding text is the tokenizer package's job.
 
 ## The weights contract
 

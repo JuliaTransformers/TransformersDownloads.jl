@@ -32,10 +32,13 @@ Pkg.add("TransformersDownloads")
 ```julia
 using TransformersDownloads
 
-config    = load_config("google-bert/bert-base-uncased")
-weights   = load_weights("google-bert/bert-base-uncased")
-vocab     = load_vocab("google-bert/bert-base-uncased")
-tokenizer = load_tokenizer("google-bert/bert-base-uncased")
+# Tiny model keeps the examples light; swap in any Hugging Face repository id.
+model_id = "hf-internal-testing/tiny-random-bert"
+
+config    = load_config(model_id)
+weights   = load_weights(model_id)
+vocab     = load_vocab(model_id)
+tokenizer = load_tokenizer(model_id)
 ```
 
 Every `load_*` function accepts a local directory or a direct file path in place

@@ -41,10 +41,13 @@ Pkg.add("TransformersDownloads")
 ```julia
 using TransformersDownloads
 
-config    = load_config("google-bert/bert-base-uncased")        # AbstractDict
-weights   = load_weights("google-bert/bert-base-uncased")        # AbstractDict{String,<:AbstractArray}
-vocab     = load_vocab("google-bert/bert-base-uncased")          # Vector{String}
-tokenizer = load_tokenizer("google-bert/bert-base-uncased")      # AbstractDict
+# Tiny model keeps the examples light; swap in any Hugging Face repository id.
+model_id = "hf-internal-testing/tiny-random-bert"
+
+config    = load_config(model_id)      # AbstractDict
+weights   = load_weights(model_id)     # AbstractDict{String,<:AbstractArray}
+vocab     = load_vocab(model_id)       # Vector{String}
+tokenizer = load_tokenizer(model_id)   # AbstractDict
 ```
 
 ## 🗂️ What you can load
@@ -136,7 +139,8 @@ end
 - 🔗 Built on [`HuggingFaceApi.jl`](https://github.com/FluxML/HuggingFaceApi.jl),
   [`SafeTensors.jl`](https://github.com/FluxML/SafeTensors.jl) and
   [`JSON.jl`](https://github.com/JuliaIO/JSON.jl).
-- 🧪 Used by [DistilBERT.jl](https://github.com/JuliaTransformers/DistilBERT.jl).
+- 🧪 Designed for [DistilBERT.jl](https://github.com/JuliaTransformers/DistilBERT.jl)
+  and other model packages.
 - 🧭 Tokenization algorithms will live in the planned `TransformersTokenizers.jl`
   package, not here — this package only fetches and parses their files.
 

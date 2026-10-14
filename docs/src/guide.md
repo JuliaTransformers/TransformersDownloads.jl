@@ -1,13 +1,13 @@
 # Ecosystem Guide
 
-This guide is for authors of downstream model packages (DistilBERT.jl and
-friends) that build on `TransformersDownloads.jl`.
+This guide is for authors of model packages, such as DistilBERT.jl, that build
+on `TransformersDownloads.jl`.
 
 ## Package scope
 
-`TransformersDownloads.jl` owns the boundary between *bytes on disk* and *Julia
-data structures*: sources, caching, and parsing of `config.json`, SafeTensors
-and Pickle checkpoints, `tokenizer.json`, vocabularies and merges.
+`TransformersDownloads.jl` handles files and formats: sources, caching, and
+parsing of `config.json`, SafeTensors and Pickle checkpoints, `tokenizer.json`,
+vocabularies and merges.
 
 - Tokenization **algorithms** (WordPiece/BPE/Unigram, encode/decode) belong in
   the planned `TransformersTokenizers.jl` package, not here.
@@ -68,8 +68,8 @@ parameter arrays is the intended use.
 `AbstractSource`:
 
 - `PathSource` for existing files and directories, and for strings that look
-  like paths (`/...`, `./...`, `~/...`) — a missing path throws
-  `PathNotFoundError` instead of producing a Hub 404;
+  like paths (`/...`, `./...`, `~/...`). A missing path throws
+  `PathNotFoundError` instead of producing a Hub 404.
 - `RepoSource` for everything else, treated as a Hugging Face repository id.
 
 Prefix relative paths with `./` to force local treatment.

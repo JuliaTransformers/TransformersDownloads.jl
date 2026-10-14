@@ -1,10 +1,13 @@
 # TransformersDownloads.jl
 
-`TransformersDownloads.jl` downloads and loads Transformer model assets
-(configurations, weights and tokenizers) from the
-[Hugging Face Hub](https://huggingface.co) or from local paths. It is the
-asset-loading substrate of the Julia Transformers ecosystem (DistilBERT.jl and
-friends).
+`TransformersDownloads.jl` downloads model files from the
+[Hugging Face Hub](https://huggingface.co) or reads them from local paths, and
+returns them as Julia data: `config.json`, SafeTensors and PyTorch weight
+files, `tokenizer.json`, vocabularies and `merges.txt`.
+
+The package contains no model or tokenization code; model architectures live in
+packages such as DistilBERT.jl, and tokenization algorithms are planned for a
+separate `TransformersTokenizers.jl` package.
 
 ## Features
 

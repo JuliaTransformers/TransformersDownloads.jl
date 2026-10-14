@@ -11,8 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 First release. `TransformersDownloads.jl` downloads and loads Transformer model
 assets (config, weights, tokenizers) from the Hugging Face Hub or from local
-paths, designed as the asset-loading substrate for the Julia Transformers
-ecosystem (BERT.jl, DistilBERT.jl, ...).
+paths.
 
 ### Added
 

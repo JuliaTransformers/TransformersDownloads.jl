@@ -6,108 +6,133 @@
 [![Coverage](https://codecov.io/gh/JuliaTransformers/TransformersDownloads.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/JuliaTransformers/TransformersDownloads.jl)
 [![Julia 1.10+](https://img.shields.io/badge/julia-1.10%2B-blueviolet)](https://julialang.org)
 
-⬇️ **Download and load Transformer model assets from the 🤗 Hugging Face Hub or
-from local paths.**
+`TransformersDownloads.jl` downloads model files from the Hugging Face Hub, or
+reads them from a local directory or file, and returns them as Julia data. It
+handles the files needed to run a model: `config.json`, SafeTensors and PyTorch
+weight files, `tokenizer.json`, vocabularies and `merges.txt`.
 
-`TransformersDownloads.jl` is the asset-loading substrate of the Julia
-Transformers ecosystem ([DistilBERT.jl](https://github.com/JuliaTransformers/DistilBERT.jl)
-and friends). It turns a repository id or a local path into ready-to-use Julia
-data — configurations, weights and tokenizer files — and nothing more.
+The package contains no model or tokenization code. Model architectures live in
+packages such as [DistilBERT.jl](https://github.com/JuliaTransformers/DistilBERT.jl),
+and tokenization algorithms are planned for a separate
+`TransformersTokenizers.jl` package.
 
-## ✨ Features
+## Features
 
-- 🤗 **Hugging Face Hub integration** — download and cache files by repository id.
-- 🚀 **SafeTensors first** — memory-mapped, zero-copy weights, including sharded
-  checkpoints (`model.safetensors.index.json`) via a lazy `ShardedStateDict`.
-- 🕰️ **Legacy support** — load PyTorch Pickle (`.bin`) weights through the
-  optional `Pickle.jl` extension.
-- 📁 **Local paths** — point at a directory or a specific file (any name), with
-  clear errors when something is missing.
-- 🧩 **Extensible** — `vocab_format`, `load_vocab_file` and `load_pickle_weights`
-  are documented extension points.
-- 🪶 **Lightweight** — three dependencies, no model or tokenization code.
+- Fetch any file from a repository by id with `hf_file`; downloads are cached
+  by [HuggingFaceApi.jl](https://github.com/FluxML/HuggingFaceApi.jl).
+- Load SafeTensors checkpoints, single-file or sharded, without copying tensor
+  data into memory.
+- Load legacy PyTorch `.bin` checkpoints through the optional
+  [Pickle.jl](https://github.com/chengchingwen/Pickle.jl) extension.
+- Read the same assets from a local directory or file by passing a path instead
+  of a repository id.
+- Add support for other vocabulary formats through `vocab_format` and
+  `load_vocab_file`.
 
-## 📦 Installation
+## Installation
 
-Requires Julia 1.10 or later (package extensions).
+Julia 1.10 or later is required (package extensions).
 
 ```julia
 using Pkg
 Pkg.add("TransformersDownloads")
 ```
 
-## ⚡ Quick start
+## Usage
 
 ```julia
 using TransformersDownloads
 
-# Tiny model keeps the examples light; swap in any Hugging Face repository id.
+# Any repository id works; this tiny model keeps the example quick.
 model_id = "hf-internal-testing/tiny-random-bert"
 
-config    = load_config(model_id)      # AbstractDict
-weights   = load_weights(model_id)     # AbstractDict{String,<:AbstractArray}
-vocab     = load_vocab(model_id)       # Vector{String}
-tokenizer = load_tokenizer(model_id)   # AbstractDict
+config    = load_config(model_id)       # parsed config.json
+weights   = load_weights(model_id)      # parameter names => arrays
+vocab     = load_vocab(model_id)        # Vector{String} for vocab.txt
+tokenizer = load_tokenizer(model_id)    # parsed tokenizer.json
 ```
 
-## 🗂️ What you can load
+Each `load_*` function also accepts a local directory or file:
+
+```julia
+config  = load_config("./my_model")
+weights = load_weights("/path/to/custom_weights.safetensors")
+```
+
+## Functions
 
 | Function | Returns |
 |---|---|
-| `hf_file(repo_id, filename)` | local path, downloading and caching as needed |
-| `hf_config`, `hf_weights`, `hf_tokenizer`, `hf_vocab`, `hf_merges` | local path of the matching asset |
-| `load_config` | `config.json` as an `AbstractDict` |
-| `load_weights` | state dict as `AbstractDict{String,<:AbstractArray}` |
-| `load_tokenizer` | `tokenizer.json` as an `AbstractDict` |
-| `load_vocab` | `Vector{String}` (`.txt`) or `AbstractDict` (`.json`) |
-| `load_merges` | `merges.txt` as a `Vector{String}` |
+| `hf_file(repo_id, filename)` | local path of any file, downloaded and cached if needed |
+| `hf_config`, `hf_weights`, `hf_tokenizer`, `hf_vocab`, `hf_merges` | local path of that asset |
+| `load_config` | `config.json` parsed into a dict |
+| `load_weights` | parameter names mapped to arrays |
+| `load_tokenizer` | `tokenizer.json` parsed into a dict |
+| `load_vocab` | `Vector{String}` for `.txt`, dict for `.json` |
+| `load_merges` | `Vector{String}` |
 
-## ⚖️ Loading weights
+## Weights
 
-`load_weights` detects the available format automatically, preferring
-SafeTensors over PyTorch Pickle. The returned object is always an
-`AbstractDict{String, <:AbstractArray}`:
+`load_weights` picks the format for you:
 
-| Checkpoint | Return type | Tensor storage |
-|---|---|---|
-| `model.safetensors` | `SafeTensors.SafeTensor` | 🧊 memory-mapped, zero-copy |
-| `model.safetensors.index.json` (sharded) | `TransformersDownloads.ShardedStateDict` | 🧊 memory-mapped, lazy |
-| `pytorch_model.bin` | `Dict{String, Any}` | 📥 copied into RAM |
+- `model.safetensors` returns a `SafeTensors.SafeTensor`. Tensor data stays
+  memory-mapped and is only read when accessed.
+- `model.safetensors.index.json` returns a `ShardedStateDict`, a lazy view over
+  the shard files.
+- `pytorch_model.bin` returns a `Dict{String, Any}`, copied into memory.
 
-To load legacy `.bin` weights, load `Pickle.jl` to enable the extension:
+All three satisfy `AbstractDict{String, <:AbstractArray}`, so the same loop
+works for any format:
+
+```julia
+for (name, tensor) in load_weights(model_id)
+    # tensor is an AbstractArray
+end
+```
+
+To read `.bin` files, load Pickle.jl to enable the extension:
 
 ```julia
 using TransformersDownloads
 using Pickle
 
-weights = load_weights("some-legacy-model")
+weights = load_weights("some-model-with-bin-weights")
 ```
 
-## 📁 Local paths
+## Local files
 
-Every `load_*` function accepts a local directory or a direct file path in place
-of a repository id:
+If the first argument is an existing file or directory, it is used directly
+instead of being treated as a repository id. This makes it possible to work
+with downloaded or converted checkpoints without touching the Hub:
 
 ```julia
 config  = load_config("./my_model")                            # directory with config.json
 weights = load_weights("./my_model")                           # directory with model.safetensors
-weights = load_weights("/path/to/custom_weights.safetensors")  # direct file, any name
-vocab   = load_vocab("/path/to/custom_vocab.txt")              # direct file, any name
+weights = load_weights("/path/to/custom_weights.safetensors")  # direct file
+vocab   = load_vocab("/path/to/custom_vocab.txt")              # direct file
 ```
 
-Classification rules:
+A path starting with `/`, `.` or `~` that does not exist throws a
+`PathNotFoundError` instead of being sent to the Hub as a repository id.
+Relative paths that do not start with `.` are treated as repository ids; write
+`./my_model` to force the local interpretation.
 
-- an existing file or directory is used locally;
-- a string starting with `/`, `.` or `~` that does not exist throws a
-  `TransformersDownloads.PathNotFoundError` instead of being sent to the Hub;
-- anything else is treated as a Hugging Face repository id. Prefix relative
-  paths with `./` to force local treatment.
+## Errors
 
-## 🚨 Error handling
+All exceptions subtype `TransformersDownloads.TransformersDownloadsError`, so
+callers can react to specific failures:
 
-All exceptions thrown by the package subtype
-`TransformersDownloads.TransformersDownloadsError`, so downstream packages can
-react to specific failures:
+| Exception | Meaning |
+|---|---|
+| `PathNotFoundError` | a path-like string does not exist locally |
+| `LocalFileNotFoundError` | a directory does not contain the requested file |
+| `WeightFormatNotFoundError` | no supported weights found |
+| `VocabFileNotFoundError` | neither `vocab.txt` nor `vocab.json` found |
+| `UnsupportedVocabFormatError` | a vocabulary file exists but its format is unknown |
+| `PickleSupportNotLoadedError` | `.bin` weights requested without `Pickle.jl` |
+
+For example, a model package can fall back to random initialization when no
+weights are available:
 
 ```julia
 using TransformersDownloads: TransformersDownloadsError, WeightFormatNotFoundError
@@ -123,35 +148,15 @@ catch err
 end
 ```
 
-## 🌱 Ecosystem
+## Documentation
 
-`TransformersDownloads.jl` is designed to be consumed by model packages:
+The [Ecosystem Guide](https://JuliaTransformers.github.io/TransformersDownloads.jl/dev/guide/)
+describes the weights contract and the extension points for package authors.
+Full API documentation is available for the
+[stable](https://JuliaTransformers.github.io/TransformersDownloads.jl/stable)
+and [dev](https://JuliaTransformers.github.io/TransformersDownloads.jl/dev)
+versions.
 
-```julia
-using TransformersDownloads
-
-state_dict = load_weights(repo_id)   # AbstractDict{String,<:AbstractArray}
-for (name, tensor) in state_dict
-    # `tensor` is an AbstractArray; copy it into your model's parameters
-end
-```
-
-- 🔗 Built on [`HuggingFaceApi.jl`](https://github.com/FluxML/HuggingFaceApi.jl),
-  [`SafeTensors.jl`](https://github.com/FluxML/SafeTensors.jl) and
-  [`JSON.jl`](https://github.com/JuliaIO/JSON.jl).
-- 🧪 Designed for [DistilBERT.jl](https://github.com/JuliaTransformers/DistilBERT.jl)
-  and other model packages.
-- 🧭 Tokenization algorithms will live in the planned `TransformersTokenizers.jl`
-  package, not here — this package only fetches and parses their files.
-
-See the [Ecosystem Guide](https://JuliaTransformers.github.io/TransformersDownloads.jl/dev/guide/)
-for the weights contract, error taxonomy and extension points.
-
-## 📚 Documentation
-
-Full documentation: [stable](https://JuliaTransformers.github.io/TransformersDownloads.jl/stable)
-· [dev](https://JuliaTransformers.github.io/TransformersDownloads.jl/dev)
-
-## 📄 License
+## License
 
 MIT License
